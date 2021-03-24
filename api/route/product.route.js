@@ -28,10 +28,12 @@ module.exports = app => {
 
     route.post('/create',auth,upload.array('photo',5), product.create); //Create Product
     route.get('/view/:url',product.count); //count View
-    route.put('/:id',auth,upload.array('photo',5), product.update); //Update Product
-    route.delete('/:id',auth, product.delete); //Delete Product
+    route.put('/:product_id',auth,upload.array('photo',5), product.update); //Update Product
+    route.delete('/:product_id',auth, product.delete); //Delete Product
 
-    route.get('/:user_id', product.getAll); //Get All Product
+    route.get('/:cat_id',auth, product.getByCatId); //Get Product by CatId
+
+    route.get('/visitor/:cat_id',product.getByCatalogId);
 
     route.use('/test',auth, (req, res) => {
         res.send({

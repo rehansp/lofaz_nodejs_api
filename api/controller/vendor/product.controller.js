@@ -36,17 +36,13 @@ exports.create = (req, res) =>{
                 mrp : req.body.mrp,
                 price : req.body.price,
                 desc : req.body.desc,
-                // feature_photo : product_img,
                 photo : product_img,
-                // photo2 : req.body.photo2, 
-                // photo3 : req.body.photo3,
-                // photo4 : req.body.photo4,
                 website: req.body.website, 
                 trends : req.body.trends, 
                 featured_or_trend: req.body.featured_or_trend,
                 unit_count : req.body.unit_count,
                 unit : req.body.unit, 
-                cat_id : req.userData.cat_id, 
+                cat_id : req.body.cat_id, 
                 // sub_id : req.body.sub_id, 
                 user_id: req.userData.user_id,
                 status : req.body.status, 
@@ -58,6 +54,7 @@ exports.create = (req, res) =>{
             product.save().then(result=>{
                 res.status(200).json({
                     status: res.statusCode,
+                    message:"product Created !!",
                     data:result,
                 });
             }).catch(err=>{
@@ -94,13 +91,10 @@ exports.update = (req, res) =>{
         }
     }
 
-    var url=(req.body.title).toLowerCase().split(' ').join('-');
-    url += "-"+Math.floor((Math.random() * 10000) + 5);
     Setting.findOne({user_id:req.userData.user_id}).then(validate=>{
         if(validate.account_status==true && validate.shop_status==true){
             const product=new Product({
                 title : req.body.title,
-                url : url,
                 mrp : req.body.mrp,
                 price : req.body.price,
                 desc : req.body.desc,
@@ -114,7 +108,7 @@ exports.update = (req, res) =>{
                 stock: req.body.stock
             });
         
-            Product.updateMany({_id:req.params.id},product).then(result=>{
+            Product.updateMany({_id:req.params.product_id},product).then(result=>{
                 res.status(200).json({
                     status: res.statusCode,
                     message:"Product Updated !",
@@ -143,7 +137,7 @@ exports.update = (req, res) =>{
 exports.delete = (req, res) =>{
     Setting.findOne({user_id:req.userData.user_id}).then(validate=>{
         if(validate.account_status==true && validate.shop_status==true){
-            Product.deleteOne({_id:req.params.id}).then(result=>{
+            Product.deleteOne({_id:req.params.product_id}).then(result=>{
                 res.status(200).json({
                     status: res.statusCode,
                     message:"Product Deleted !",
@@ -171,7 +165,7 @@ exports.delete = (req, res) =>{
 exports.count=(req,res)=>{
     var url=req.params.url;
     
-    Product.findOne({url:url}).exec().then(docs => {
+    Product.findOne({url:url}).select('views').exec().then(docs => {
         var views=docs.views+1;
         Product.updateOne({ _id: docs._id }, { $set: { views: views } }).exec().then(uv => {
             console.log("Views Updated !!");
@@ -189,16 +183,50 @@ exports.count=(req,res)=>{
     });
 }
 
-exports.getAll=(req,res)=>{
-    console.log(req.params.id);
-    Product.find({user_id:req.params.id}).select('title url photo mrp desc website').exec().then(data=>{
-        res.status(200).json({
-            status:res.statusCode,
-            data:data
-        });
+exports.getByCatId=(req,res)=>{
+    Setting.findOne({user_id:req.userData.user_id}).then(validate=>{
+        if(validate.account_status==true && validate.shop_status==true){
+            Product.find({cat_id:req.params.cat_id}).exec().then(data=>{
+                res.status(200).json({
+                    status:res.statusCode,
+                    count:data.length,
+                    data:data
+                });
+            }).catch(err=>{
+                res.status(500).json({
+                    error: err.message || "Some error occurred !!"
+                });
+            })
+        }else{
+            res.status(500).json({
+                message: "Please try again Later!!"
+            });
+        }
     }).catch(err=>{
+        console.log(err);
         res.status(500).json({
             error: err.message || "Some error occurred !!"
         });
-    })
+    });
+}
+
+exports.getByCatalogId=(req,res)=>{
+    
+    var id=req.params.cat_id;
+    Product.find({cat_id:id}).exec().then(docs => {
+        if(docs[0]==null){
+            res.status(404).json({
+                message:"No User Found !!"
+            });
+        }else{
+            res.status(200).json({
+                data:docs
+            });
+        }
+    }).catch(err=>{
+        console.log(err);
+        res.status(500).json({
+            error: err.message || "Some error occurred !!"
+        });
+    });
 }

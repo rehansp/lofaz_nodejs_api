@@ -2,7 +2,6 @@ const Vendor = require('../../model/vendor');
 const mongoose = require('mongoose');
 const moment = require('moment');
 const jwt = require('jsonwebtoken');
-const config = require('../../config/nodemon.json');
 const Setting=require('../../model/setting');
 
 exports.create = (req, res) => {
@@ -28,34 +27,21 @@ exports.create = (req, res) => {
     Vendor.findOne({phone:phone}).exec().then(docs => {
         if (docs) {
             Setting.findOne({user_id:docs._id}).then(data=>{
-                // console.log(data.account_status);
                 if(data.account_status==true){
-                    if(data.shop_status==true){
-                        const token = jwt.sign({ phone: phone, user_id: docs._id }, config.env.SECRET_KEY, { expiresIn: "6h" });
-                        Vendor.updateOne({ _id: docs._id }, { $set: { token: mobile_token } }).exec().then(uv => {
-                            console.log("token Updated !!");
-                        }).catch(err => {
-                            console.log(err);
-                        });
-                        res.status(404).json({
-                            message: "User Exits !!",
-                            token:token
-                        });
-                    }else{
-                        const token = jwt.sign({ phone: phone, user_id: docs._id }, config.env.SECRET_KEY, { expiresIn: "6h" });
-                        Vendor.updateOne({ _id: docs._id }, { $set: { token: mobile_token } }).exec().then(uv => {
-                            console.log("token Updated !!");
-                        }).catch(err => {
-                            console.log(err);
-                        });
-                        res.status(404).json({
-                            message: "Shop is closed !!",
-                            token:token
-                        });
-                    }
+                    const token = jwt.sign({ phone: phone, user_id: docs._id }, process.env.TOKEN_SECRET_KEY, { expiresIn: "6h" });
+                    Vendor.updateOne({ _id: docs._id }, { $set: { token: mobile_token } }).exec().then(uv => {
+                        console.log("token Updated !!");
+                    }).catch(err => {
+                        console.log(err);
+                    });
+                    res.status(409).json({
+                        status:res.statusCode,
+                        message: "Already Vendor Exits !!",
+                        token:token
+                    });
                 }else{
                     res.status(404).json({
-                        message: "Account Closed !!"
+                        message: "Account Disable !!"
                     });
                 }
             }).catch(err=>{
@@ -90,7 +76,7 @@ exports.create = (req, res) => {
             });
 
             vendor.save().then(result => {
-                const token = jwt.sign({ phone: phone, user_id: result._id,username:result.username }, config.env.SECRET_KEY, { expiresIn: "6h" });
+                const token = jwt.sign({ phone: phone, user_id: result._id,username:result.username }, process.env.TOKEN_SECRET_KEY, { expiresIn: "6h" });
                 const setting=new Setting({
                     _id: new mongoose.Types.ObjectId,
                     user_id: result._id,
@@ -101,12 +87,13 @@ exports.create = (req, res) => {
                 });
                 
                 setting.save().then(data=>{
-                    console.log(data);
+                    console.log("Updated Setting !");
                 }).catch(err=>{
                     console.log(err);
                 });
                 res.status(200).json({
                     status: res.statusCode,
+                    message:"Vendor Account Created !!",
                     token:token,
                     data: result
                 });
@@ -127,7 +114,7 @@ exports.create = (req, res) => {
 
 exports.count=(req,res)=>{
     var uname=req.params.username;
-    Vendor.findOne({username:uname}).exec().then(docs => {
+    Vendor.findOne({username:uname}).select('views').exec().then(docs => {
         var views=docs.views+1;
         Vendor.updateOne({ _id: docs._id }, { $set: { views: views } }).exec().then(uv => {
             console.log("Views Updated !!");
@@ -149,14 +136,14 @@ exports.count=(req,res)=>{
 //Update Vendor details
 exports.update=(req,res)=>{
     var vendor_img;
-
+    var user_id=req.userData.user_id;
     if(!req.file){
         vendor_img="null";
     }else{
         vendor_img=req.file.filename;
     }
     
-    Setting.findOne({user_id:req.userData.user_id}).then(validate=>{
+    Setting.findOne({user_id:user_id}).exec().then(validate=>{
         if(validate.account_status==true && validate.shop_status==true){
             const vendor=new Vendor({
                 full_name: req.body.full_name,
@@ -175,8 +162,9 @@ exports.update=(req,res)=>{
                 country: req.body.country,
                 about: req.body.about
             });
-            Vendor.updateMany({ _id: req.params.id },vendor).then(result=>{
+            Vendor.updateMany({ _id: user_id },vendor).then(result=>{
                 res.status(200).json({
+                    status:res.statusCode,
                     message:"Vendor Updated !!"
                 })
             }).catch(err=>{
@@ -188,6 +176,26 @@ exports.update=(req,res)=>{
         }else{
             res.status(500).json({
                 message: "Please try again Later!!"
+            });
+        }
+    }).catch(err=>{
+        console.log(err);
+        res.status(500).json({
+            error: err.message || "Some error occurred !!"
+        });
+    });
+}
+
+exports.getByUsername=(req,res)=>{
+    var uname=req.params.username;
+    Vendor.find({username:uname}).exec().then(docs => {
+        if(docs[0]==null){
+            res.status(404).json({
+                message:"No User Found !!"
+            });
+        }else{
+            res.status(200).json({
+                data:docs
             });
         }
     }).catch(err=>{

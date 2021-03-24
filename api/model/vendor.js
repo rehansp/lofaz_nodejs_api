@@ -19,7 +19,7 @@ const vendorSchema = mongoose.Schema({
     country: String,
     about: String,
     currency: String,
-    token:String,
+    mobile_token:String,
     login: String,
     views:Number,
     last_login:String,

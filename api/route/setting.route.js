@@ -9,5 +9,5 @@ module.exports=app=>{
         res.send("Setting Api Working");
     });
 
-    app.use('/api/vendor/setting',route);
+    app.use('/api/setting',route);
 }

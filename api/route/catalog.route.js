@@ -28,10 +28,12 @@ module.exports = app => {
 
     route.post('/create',auth,upload.single('photo'), catalog.create); //Create Catalog
     route.get('/view/:url',catalog.count); //count View
-    route.put('/:id',auth,upload.single('photo'), catalog.update); //Update Catalog
-    route.delete('/:id',auth, catalog.delete); //Delete Catalog
+    route.put('/:cat_id',auth,upload.single('photo'), catalog.update); //Update Catalog
+    route.delete('/:cat_id',auth, catalog.delete); //Delete Catalog
 
-    route.get('/:user_id',catalog.getById); //Getting All Catalog
+    route.get('/:user_id',auth,catalog.getByUserId); //Getting All Catalog
+
+    route.get('/visitor/:user_id',catalog.getUserId);
     route.use('/test',auth, (req, res) => {
         res.send({
             decode:req.userData,

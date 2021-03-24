@@ -1,7 +1,8 @@
 const mongoose = require('mongoose');
-const config = require('../config/nodemon.json');
+const dotEnv = require('dotenv');
+dotEnv.config();
 
-const url = "mongodb+srv://rehan:"+config.env.MONGO_ATLAS_PWD+"@rehan.qjzvb.mongodb.net/lofaz";
+const url = process.env.DB_SERVER;
 
 mongoose.connect(url,{
     useNewUrlParser: true,

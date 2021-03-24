@@ -30,6 +30,7 @@ exports.create = (req, res) => {
             admin.save().then(result => {
                 res.status(200).json({
                     status: res.statusCode,
+                    message:"Admin Account Created !!",
                     data:result
                 });
             }).catch(err => {

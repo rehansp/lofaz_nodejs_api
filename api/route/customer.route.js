@@ -29,6 +29,7 @@ module.exports = app => {
 
 
     route.post('/signup',upload.single('photo'), customer.create); //Create Customer Account
+
     route.use('/test', (req, res) => {
         res.send({
             message:"It's Working !!"

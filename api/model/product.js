@@ -6,8 +6,7 @@ const productSchema=mongoose.Schema({
     url   : String,
     mrp   : Number,
     price : Number,
-    desc : String, 
-    // feature_photo : String,
+    desc : String,
     photo  : Array,
     website : String, 
     trends  : String,
@@ -17,7 +16,7 @@ const productSchema=mongoose.Schema({
     cat_id     : String, 
     sub_id     : String,
     user_id    : String,
-    status     : String,
+    status     : Boolean,
     views      : Number,
     stock   : Number
 },{

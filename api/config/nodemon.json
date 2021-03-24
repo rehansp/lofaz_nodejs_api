@@ -1,6 +1,0 @@
-{
-    "env":{
-        "MONGO_ATLAS_PWD":"sheefa101",
-        "SECRET_KEY":"lofaz@123"
-    }
-}

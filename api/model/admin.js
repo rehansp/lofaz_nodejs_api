@@ -6,7 +6,7 @@ const adminSchema=mongoose.Schema({
     email: String,
     password: String,
     role:String,
-    status:Number
+    status:Boolean
     
 },{ timestamps: {createdAt:true, updatedAt:false} });
 

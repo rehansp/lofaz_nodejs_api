@@ -30,6 +30,9 @@ module.exports = app => {
     route.post('/signup',upload.single('photo'), vendor.create); //Create Vendor Account
     route.get('/view/:username',vendor.count); //count View
     route.put('/:id',auth,upload.single('photo'), vendor.update); //update Vendor Account
+
+    route.get('/visitor/:username',vendor.getByUsername); //for Customer visitor
+
     app.use('/api/vendor',route);
 }
 
